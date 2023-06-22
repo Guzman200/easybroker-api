@@ -1,6 +1,6 @@
 <?php
 
-require_once('../vendor/autoload.php');
+require __DIR__ . '/../vendor/autoload.php';
 
 class EasyBrokerAPI {
 
@@ -17,18 +17,35 @@ class EasyBrokerAPI {
 
     public function listAllProperties($page)
     {
-        $params = '?page=' . $page . '&limit=20';
+        try{
 
-        $response = $this->client->request('GET', $this->uri . $params, [
-            'headers' => [
-              'X-Authorization' => $this->apiKey,
-              'accept' => 'application/json',
-            ],
-        ]);
-          
-        return json_decode($response->getBody(), true);
+        
+            $params = '?page=' . $page . '&limit=20';
+
+            $response = $this->client->request('GET', $this->uri . $params, [
+                'headers' => [
+                'X-Authorization' => $this->apiKey,
+                'accept' => 'application/json',
+                ],
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            
+            $data = json_decode($response->getBody(), true);
+
+            return ['data' => $data, 'statusCode' => $statusCode];
+
+        }catch(Throwable $e){
+
+        }
+
+        return ['data' => [], 'statusCode' => 500];
     }
 
+    public function setApiKey($apiKey)
+    {
+        $this->apiKey = $apiKey;
+    }
 
 
 }
@@ -40,7 +57,7 @@ if(isset($_GET['listAllProperties'])){
  
     $properties = $easyBrokerApi->listAllProperties($_GET['page']);
  
-    echo json_encode(['data' => $properties]);
+    echo json_encode($properties);
  
     return 0;
 }
